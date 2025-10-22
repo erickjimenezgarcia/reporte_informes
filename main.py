@@ -23,7 +23,7 @@ PLANTILLA_DOCX = BASE_DIR / "plantilla_word_informe.docx"
 def read_root():
     return FileResponse("index.html")
 
-@app.post("/generate-report")
+@app.post("/generate")
 async def generate_report(
     eventos_xlsx: UploadFile = File(...),
     vehiculos_xlsx: UploadFile = File(...),
