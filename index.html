@@ -71,7 +71,7 @@
     <div class="grid">
       <div class="row card">
         <label for="apiUrl">Endpoint de la API</label>
-        <input id="apiUrl" type="text" value="http://localhost:8000/generate" />
+        <input id="apiUrl" type="text" />
         <div class="notice">Asegúrate de que el backend (FastAPI) esté corriendo y con CORS habilitado si abres este HTML directamente.</div>
       </div>
 
@@ -132,6 +132,16 @@
 
     apiUrl.addEventListener('input', () => apiLabel.textContent = apiUrl.value || '(sin endpoint)');
 
+
+    function defaultEndpoint() {
+      const origin = window.location.origin;
+      const looksHttp = /^https?:\/\//i.test(origin);
+      // En Render/Local servido por FastAPI: same-origin
+      if (looksHttp) return `${origin}/generate`;
+      // Si abres el HTML como file://, usa localhost
+      return 'http://127.0.0.1:8000/generate';
+    }
+
     function setStatus(msg, isError=false){
       statusBox.textContent = msg;
       statusBox.style.color = isError ? 'var(--danger)' : 'var(--muted)';
@@ -140,6 +150,12 @@
       progress.style.display = 'block';
       progressBar.style.width = `${p}%`;
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const ep = defaultEndpoint();
+      apiUrl.value = ep;
+      apiLabel.textContent = ep;
+    });
 
     $('#btnReset').addEventListener('click', () => {
       ['eventos','vehiculos','direcciones'].forEach(id => { const el = document.getElementById(id); el.value=''; });
