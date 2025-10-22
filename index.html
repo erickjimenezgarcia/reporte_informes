@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generar Informe (API)</title>
+  <style>
+    :root {
+      --bg: #0f172a;        /* slate-900 */
+      --card: #111827;      /* gray-900 */
+      --muted: #94a3b8;     /* slate-400 */
+      --accent: #22c55e;    /* green-500 */
+      --accent-2: #3b82f6;  /* blue-500 */
+      --danger: #ef4444;    /* red-500 */
+      --text: #e5e7eb;      /* gray-200 */
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial;
+      background: radial-gradient(1200px 600px at 10% 0%, #0b1226, var(--bg));
+      color: var(--text);
+      min-height: 100vh; display: grid; place-items: center;
+    }
+    .container {
+      width: min(900px, 92vw);
+      background: linear-gradient(180deg, #0b1226 0%, var(--card) 100%);
+      border: 1px solid #1f2937;
+      border-radius: 18px;
+      box-shadow: 0 10px 50px rgba(0,0,0,.45);
+      padding: 26px 28px;
+    }
+    header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom: 18px; }
+    header h1 { font-size: clamp(18px, 2.8vw, 26px); margin: 0; letter-spacing:.3px; }
+    header small { color: var(--muted); }
+    .grid { display: grid; gap: 14px; grid-template-columns: 1fr; }
+    .row { display:grid; gap:12px; grid-template-columns: 1fr; }
+    .card { border:1px dashed #334155; border-radius:14px; padding:14px; background:#0b1226; }
+    label { display:block; font-size: 13px; color: var(--muted); margin-bottom:6px; }
+    input[type="file"], input[type="text"], input[type="number"], select {
+      width:100%; padding:10px 12px; border-radius:10px; border:1px solid #334155; background:#0b1226; color:var(--text);
+      outline:none; transition:border-color .2s ease;
+    }
+    input[type="file"]:focus, input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: var(--accent-2); }
+    .two-col { display:grid; gap:12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .btns { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    button {
+      appearance: none; border:0; border-radius: 12px; padding: 10px 14px; cursor:pointer; font-weight:600;
+      background: linear-gradient(135deg, var(--accent-2), #06b6d4); color:white; box-shadow: 0 6px 20px rgba(59,130,246,.25);
+    }
+    button.secondary { background: linear-gradient(135deg, #475569, #334155); box-shadow:none; }
+    .status { margin-top: 10px; font-size: 13px; color: var(--muted); min-height: 20px; }
+    .progress { height: 6px; width:100%; background:#111827; border-radius:999px; overflow:hidden; margin-top: 8px; display:none; }
+    .progress > div { height: 100%; width:0%; background: linear-gradient(90deg, var(--accent-2), #06b6d4); transition: width .2s; }
+    .notice { font-size:12px; color:var(--muted); margin-top:6px; }
+    .endpoint { color:#93c5fd; font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace; font-size:12px; }
+    footer { margin-top: 18px; display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:12px; }
+    .pill { padding:4px 8px; border-radius:999px; background:#0b1226; border:1px solid #334155; }
+    @media (max-width:720px){ .two-col{ grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Generador de Informe</h1>
+        <small>Sube los 3 Excel requeridos y descarga el .docx</small>
+      </div>
+      <div class="pill">API: <span id="apiLabel" class="endpoint">http://localhost:8000/generate-report</span></div>
+    </header>
+
+    <div class="grid">
+      <div class="row card">
+        <label for="apiUrl">Endpoint de la API</label>
+        <input id="apiUrl" type="text" value="http://localhost:8000/generate-report" />
+        <div class="notice">Asegúrate de que el backend (FastAPI) esté corriendo y con CORS habilitado si abres este HTML directamente.</div>
+      </div>
+
+      <div class="row two-col">
+        <div class="card">
+          <label for="eventos">eventos_xlsx (sheet "Eventos")</label>
+          <input id="eventos" type="file" accept=".xlsx,.xls" />
+        </div>
+        <div class="card">
+          <label for="vehiculos">vehiculos_xlsx (sheet "Vehículos")</label>
+          <input id="vehiculos" type="file" accept=".xlsx,.xls" />
+        </div>
+        <div class="card">
+          <label for="direcciones">direcciones_xlsx (sheet "Direcciones")</label>
+          <input id="direcciones" type="file" accept=".xlsx,.xls" />
+        </div>
+      </div>
+
+      <div class="row card">
+        <div class="two-col" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+          <div>
+            <label for="mes_nombre">Mes (texto)</label>
+            <input id="mes_nombre" type="text" value="Agosto" />
+          </div>
+          <div>
+            <label for="mes_num">Mes (número)</label>
+            <input id="mes_num" type="number" value="8" min="1" max="12" />
+          </div>
+          <div>
+            <label for="anio">Año</label>
+            <input id="anio" type="number" value="2025" min="2000" max="2100" />
+          </div>
+        </div>
+      </div>
+
+      <div class="btns">
+        <button id="btnSend">Generar informe</button>
+        <button class="secondary" id="btnReset" type="button">Reiniciar</button>
+      </div>
+
+      <div class="status" id="status"></div>
+      <div class="progress" id="progress"><div></div></div>
+    </div>
+
+    <footer>
+      <span>Hecho para pruebas locales</span>
+      <span class="pill">Salida: .docx</span>
+    </footer>
+  </div>
+
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const apiUrl = $('#apiUrl');
+    const statusBox = $('#status');
+    const progress = $('#progress');
+    const progressBar = $('#progress > div');
+    const apiLabel = $('#apiLabel');
+
+    apiUrl.addEventListener('input', () => apiLabel.textContent = apiUrl.value || '(sin endpoint)');
+
+    function setStatus(msg, isError=false){
+      statusBox.textContent = msg;
+      statusBox.style.color = isError ? 'var(--danger)' : 'var(--muted)';
+    }
+    function setProgress(p){
+      progress.style.display = 'block';
+      progressBar.style.width = `${p}%`;
+    }
+
+    $('#btnReset').addEventListener('click', () => {
+      ['eventos','vehiculos','direcciones'].forEach(id => { const el = document.getElementById(id); el.value=''; });
+      setStatus('');
+      progress.style.display = 'none';
+      progressBar.style.width = '0%';
+    });
+
+    $('#btnSend').addEventListener('click', async (e) => {
+      e.preventDefault();
+      setStatus('Validando archivos…');
+
+      const ev = document.getElementById('eventos').files[0];
+      const ve = document.getElementById('vehiculos').files[0];
+      const di = document.getElementById('direcciones').files[0];
+
+      if(!ev || !ve || !di){
+        setStatus('Faltan archivos. Sube los 3 Excel requeridos.', true);
+        return;
+      }
+
+      const url = apiUrl.value.trim();
+      if(!url){ setStatus('Endpoint vacío.', true); return; }
+
+      const form = new FormData();
+      form.append('eventos_xlsx', ev);
+      form.append('vehiculos_xlsx', ve);
+      form.append('direcciones_xlsx', di);
+      form.append('mes_nombre', document.getElementById('mes_nombre').value || 'Agosto');
+      form.append('mes_num', document.getElementById('mes_num').value || '8');
+      form.append('anio', document.getElementById('anio').value || '2025');
+
+      try {
+        setStatus('Subiendo archivos…');
+        setProgress(20);
+        const res = await fetch(url, { method: 'POST', body: form });
+        setProgress(60);
+        if(!res.ok){
+          const txt = await res.text();
+          throw new Error(`Error ${res.status}: ${txt}`);
+        }
+        // Recibir blob .docx y forzar descarga
+        const blob = await res.blob();
+        setProgress(90);
+        const a = document.createElement('a');
+        const objectUrl = URL.createObjectURL(blob);
+        a.href = objectUrl;
+        a.download = `Informe_Final_${document.getElementById('mes_nombre').value || 'Mes'}_${document.getElementById('anio').value || 'Año'}.docx`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(objectUrl);
+        setProgress(100);
+        setStatus('Informe generado y descargado ✅');
+      } catch(err){
+        console.error(err);
+        setStatus(err.message || 'Error generando el informe.', true);
+      }
+    });
+  </script>
+</body>
+</html>
