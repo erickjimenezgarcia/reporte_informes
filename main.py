@@ -5,6 +5,7 @@ from starlette.background import BackgroundTask
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 import tempfile, shutil
+import os
 
 from build_report import build_report_template_api  # tu función parametrizada
 
@@ -14,7 +15,8 @@ app.add_middleware(
     allow_origins=["*"], allow_methods=["*"], allow_headers=["*"], allow_credentials=True,
 )
 
-BASE_DIR = Path("/home/erick/projectos/stata").resolve()
+BASE_DIR = Path(os.getenv("BASE_DIR", Path(__file__).resolve().parent))
+
 EP_REGION_XLSX = BASE_DIR / "ep_region_macrorregion.xlsx"
 PLANTILLA_DOCX = BASE_DIR / "plantilla_word_informe.docx"
 
